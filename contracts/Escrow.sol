@@ -28,6 +28,7 @@ contract Escrow {
     mapping(uint256 => uint256) public purchasePrice;
     mapping(uint256 => uint256) public escrowAmount;
     mapping(uint256 => address) public buyer;
+    mapping(uint256 => bool) public inspectionPassed;
 
     constructor(
         address _nftAddress,
@@ -57,5 +58,11 @@ contract Escrow {
 
     function depositEarnest(uint256 _nftID) public payable onlyBuyer(_nftID) {
         require(msg.value >= escrowAmount[_nftID], "Insufficient funds");
+    }
+
+    receive() external payable {}
+
+    function getBalance() public view returns (uint256) {
+        return address(this).balance;
     }
 }
