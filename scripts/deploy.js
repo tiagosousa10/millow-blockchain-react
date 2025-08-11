@@ -40,6 +40,7 @@ async function main() {
   );
 
   await escrow.deployed();
+  console.log("🚀 ~ main ~ escrow:", escrow.address);
 
   for (let i = 0; i < 3; i++) {
     //arpover properties
