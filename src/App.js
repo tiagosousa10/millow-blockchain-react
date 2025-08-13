@@ -20,48 +20,52 @@ function App() {
   const [homes, setHomes] = useState([]);
 
   const loadBlockchainData = async () => {
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-    setProvider(provider);
-    const network = await provider.getNetwork();
+    try {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      setProvider(provider);
 
-    const realEstate = new ethers.Contract(
-      config[network.chainId].realEstate.address,
-      RealEstate,
-      provider
-    );
+      const network = await provider.getNetwork();
+      const chainId = network.chainId;
 
-    const totalSupply = await realEstate.totalSupply();
-    const homes = [];
+      const contractAddresses = config[chainId];
+      if (!contractAddresses) {
+        throw new Error(`No contract addresses found for chainId ${chainId}`);
+      }
 
-    for (var i = 1; i <= totalSupply; i++) {
-      const uri = await realEstate.tokenURI(i);
-      console.log("🚀 ~ loadBlockchainData ~ uri:", uri);
-      const response = await fetch(uri);
-      const metadata = await response.json();
-      homes.push(metadata);
-    }
+      const realEstate = new ethers.Contract(
+        contractAddresses.realEstate.address,
+        RealEstate,
+        provider
+      );
+      const totalSupply = await realEstate.totalSupply();
+      const homes = [];
 
-    setHomes(homes);
+      for (var i = 1; i <= totalSupply; i++) {
+        const uri = await realEstate.tokenURI(i);
+        const response = await fetch(uri);
+        const metadata = await response.json();
+        homes.push(metadata);
+      }
 
-    const escrow = new ethers.Contract(
-      config[network.chainId].escrow.address,
+      setHomes(homes);
 
-      Escrow,
-      provider
-    );
-    console.log(
-      "🚀 ~ loadBlockchainData ~ config -> escrow:",
-      config[network.chainId].escrow.address
-    );
-    setEscrow(escrow);
+      const escrow = new ethers.Contract(
+        contractAddresses.escrow.address,
+        Escrow,
+        provider
+      );
+      setEscrow(escrow);
 
-    window.ethereum.on("accountsChanged", async () => {
-      const accounts = await window.ethereum.request({
-        method: "eth_requestAccounts",
+      window.ethereum.on("accountsChanged", async () => {
+        const accounts = await window.ethereum.request({
+          method: "eth_requestAccounts",
+        });
+        const account = ethers.utils.getAddress(accounts[0]);
+        setAccount(account);
       });
-      const account = ethers.utils.getAddress(accounts[0]);
-      setAccount(account);
-    });
+    } catch (error) {
+      console.error("Error loading blockchain data:", error.message);
+    }
   };
 
   useEffect(() => {

@@ -7,15 +7,15 @@
 const hre = require("hardhat");
 
 const tokens = (n) => {
-  return hre.ethers.utils.parseUnits(n.toString(), "ether");
+  return ethers.utils.parseUnits(n.toString(), "ether");
 };
 
 async function main() {
   // Setup accounts
-  const [buyer, seller, inspector, lender] = await hre.ethers.getSigners();
+  const [buyer, seller, inspector, lender] = await ethers.getSigners();
 
   // Deploy Real Estate
-  const RealEstate = await hre.ethers.getContractFactory("RealEstate");
+  const RealEstate = await ethers.getContractFactory("RealEstate");
   const realEstate = await RealEstate.deploy();
   await realEstate.deployed();
 
@@ -34,7 +34,7 @@ async function main() {
   }
 
   // Deploy Escrow
-  const Escrow = await hre.ethers.getContractFactory("Escrow");
+  const Escrow = await ethers.getContractFactory("Escrow");
   const escrow = await Escrow.deploy(
     realEstate.address,
     seller.address,
@@ -55,8 +55,6 @@ async function main() {
   }
 
   // Listing properties...
-  let transaction;
-
   transaction = await escrow
     .connect(seller)
     .list(1, buyer.address, tokens(20), tokens(10));
