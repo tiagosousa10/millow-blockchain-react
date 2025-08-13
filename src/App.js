@@ -22,12 +22,10 @@ function App() {
   const loadBlockchainData = async () => {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     setProvider(provider);
-
     const network = await provider.getNetwork();
 
-    // config[network.chainId].escrow.address
     const realEstate = new ethers.Contract(
-      config[network.chainId].escrow.address,
+      config[network.chainId].realEstate.address,
       RealEstate,
       provider
     );
@@ -37,25 +35,26 @@ function App() {
 
     for (var i = 1; i <= totalSupply; i++) {
       const uri = await realEstate.tokenURI(i);
+      console.log("🚀 ~ loadBlockchainData ~ uri:", uri);
       const response = await fetch(uri);
       const metadata = await response.json();
-
       homes.push(metadata);
     }
 
     setHomes(homes);
 
-    console.log(homes);
-
     const escrow = new ethers.Contract(
       config[network.chainId].escrow.address,
+
       Escrow,
       provider
     );
-
+    console.log(
+      "🚀 ~ loadBlockchainData ~ config -> escrow:",
+      config[network.chainId].escrow.address
+    );
     setEscrow(escrow);
 
-    //refresh account
     window.ethereum.on("accountsChanged", async () => {
       const accounts = await window.ethereum.request({
         method: "eth_requestAccounts",
@@ -78,19 +77,24 @@ function App() {
         <hr />
 
         <div className="cards">
-          <div className="card">
-            <div className="card__image">
-              <img src="" alt="Home" />
-            </div>
-            <div className="card__info">
-              <h4>1 ETH</h4>
-              <p>
-                <strong>1</strong> bds |<strong>2</strong> ba |
-                <strong>3</strong> sqft
-              </p>
-              <p>123 Elm Street</p>
-            </div>
-          </div>
+          {homes.map((home, index) => {
+            return (
+              <div className="card" key={index}>
+                <div className="card__image">
+                  <img src={home.image} alt="Home" />
+                </div>
+                <div className="card__info">
+                  <h4>{home.attributes[0].value} ETH</h4>
+                  <p>
+                    <strong>{home.attributes[2].value}</strong> bds |
+                    <strong>{home.attributes[3].value}</strong> ba |
+                    <strong>{home.attributes[4].value}</strong> sqft
+                  </p>
+                  <p>123 Elm Street</p>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

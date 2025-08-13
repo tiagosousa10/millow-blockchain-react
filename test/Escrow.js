@@ -21,7 +21,7 @@ describe("Escrow", () => {
     let transaction = await realEstate
       .connect(seller)
       .mint(
-        "https://ipfs.io/ipfs/QmTudSYeM7mz3PkYEWXWqPjomRPHogcMFSq7XAvsvsgAPS"
+        "https://ipfs.io/ipfs/QmQUozrHLAusXDxrvsESJ3PYB3rUeUuBAvVWw6nop2uu7c"
       );
     await transaction.wait();
 
