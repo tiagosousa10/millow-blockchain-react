@@ -52,6 +52,29 @@ const Home = ({ home, provider, account, escrow, toggleProp }) => {
     setOwner(owner);
   };
 
+  const buyHandler = async () => {
+    const escrowAmount = await escrow.escrowAmount(home.id);
+    const signer = await provider.getSigner();
+
+    // buyer deposit earnest
+    let transaction = await escrow.connect(signer).depositEarnest(home.id, {
+      value: escrowAmount,
+    });
+    await transaction.wait();
+
+    //buyer approves..
+    transaction = await escrow.connect(signer).approveSale(home.id);
+    await transaction.wait();
+
+    setHasBought(true);
+  };
+
+  const lendHandler = async () => {};
+
+  const inspectHandler = async () => {};
+
+  const sellHandler = async () => {};
+
   useEffect(() => {
     fetchDetails();
     fetchOwner();
@@ -82,32 +105,32 @@ const Home = ({ home, provider, account, escrow, toggleProp }) => {
             <div>
               {account === inspector ? (
                 <button
-                  // onClick={buyHandler}
-                  // disabled={hasBought}
+                  onClick={inspectHandler}
+                  disabled={hasInspected}
                   className="home__buy"
                 >
                   Approve Inspection
                 </button>
               ) : account === lender ? (
                 <button
-                  // onClick={buyHandler}
-                  // disabled={hasBought}
+                  onClick={lendHandler}
+                  disabled={hasLended}
                   className="home__buy"
                 >
                   Approve & Lend
                 </button>
               ) : account === seller ? (
                 <button
-                  // onClick={buyHandler}
-                  // disabled={hasBought}
+                  onClick={sellHandler}
+                  disabled={hasSold}
                   className="home__buy"
                 >
                   Approve & Sell
                 </button>
               ) : (
                 <button
-                  // onClick={buyHandler}
-                  // disabled={hasBought}
+                  onClick={buyHandler}
+                  disabled={hasBought}
                   className="home__buy"
                 >
                   Buy
