@@ -69,11 +69,50 @@ const Home = ({ home, provider, account, escrow, toggleProp }) => {
     setHasBought(true);
   };
 
-  const lendHandler = async () => {};
+  const inspectHandler = async () => {
+    const signer = await provider.getSigner();
 
-  const inspectHandler = async () => {};
+    let transaction = await escrow
+      .connect(signer)
+      .updateInspectionStatues(home.id, true);
+    await transaction.wait();
 
-  const sellHandler = async () => {};
+    setHasInspected(true);
+  };
+
+  const lendHandler = async () => {
+    const signer = await provider.getSigner();
+
+    //lender approves...
+    let transaction = await escrow.connect(signer).approveSale(home.id);
+    await transaction.wait();
+
+    //lender sends funds to contract...
+    const lendAmount =
+      (await escrow.purchasePrice(home.id)) -
+      (await escrow.escrowAmount(home.id));
+    await signer.sendTransaction({
+      to: escrow.address,
+      value: lendAmount.toString(),
+      gasLimit: 60000,
+    });
+
+    setHasLended(true);
+  };
+
+  const sellHandler = async () => {
+    const signer = await provider.getSigner();
+
+    // Seller approves
+    let transaction = await escrow.connect(signer).approveSale(home.id);
+    await transaction.wait();
+
+    //Seller finalize..
+    transaction = await escrow.connect(signer).finalizeSale(home.id);
+    await transaction.wait();
+
+    setHasSold(true);
+  };
 
   useEffect(() => {
     fetchDetails();
